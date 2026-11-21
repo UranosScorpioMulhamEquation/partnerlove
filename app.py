@@ -422,6 +422,11 @@ COMPATIBILITY_MEANINGS = {
     9: "انفصال",
 }
 
+TWO_LETTER_RULE_NOTICE = (
+    "تنبيه منهجي: في حال كان الاسم مكوناً من حرفين فقط (مثل: طه أو مي)، "
+    "يتم تكرار قيمة أول حرف ليكون بمثابة الحرف الثالث وفق قاعدة الدوران إلى الحرف الأول."
+)
+
 # ==========================================
 # 5. الدوال البرمجية (Functions)
 # ==========================================
@@ -546,18 +551,29 @@ def clean_first_name(name_str: str) -> str:
     return "".join(ch for ch in name_str.strip() if ch in JUMMAL_SAGHIR)
 
 
+def extract_third_char_with_two_letter_rule(cleaned_name: str) -> tuple[str, bool]:
+    """
+    استخراج الحرف الثالث وفق قاعدة الدوران:
+    إذا كان الاسم مكوناً من حرفين فقط، يتم تكرار أول حرف كحرف ثالث.
+    """
+    if len(cleaned_name) == 2:
+        return cleaned_name[0], True
+    return cleaned_name[2], False
+
+
 def check_partners_compatibility(partner1_name: str, partner2_name: str) -> dict:
     """
     حساب التوافق من الحرف الثالث للاسم الأول لكل شريك باستخدام الجُمَّل الصغير فقط.
+    في حال كان الاسم مكوناً من حرفين يتم تكرار قيمة أول حرف.
     """
     clean1 = clean_first_name(partner1_name)
     clean2 = clean_first_name(partner2_name)
 
-    if len(clean1) < 3 or len(clean2) < 3:
-        raise ValueError("يجب أن يتكون الاسم الأول لكل شريك من 3 أحرف عربية على الأقل.")
+    if len(clean1) < 2 or len(clean2) < 2:
+        raise ValueError("يجب أن يتكون الاسم الأول لكل شريك من حرفين عربيين على الأقل.")
 
-    third_char1 = clean1[2]
-    third_char2 = clean2[2]
+    third_char1, repeated1 = extract_third_char_with_two_letter_rule(clean1)
+    third_char2, repeated2 = extract_third_char_with_two_letter_rule(clean2)
 
     val1 = JUMMAL_SAGHIR[third_char1]
     val2 = JUMMAL_SAGHIR[third_char2]
@@ -570,9 +586,11 @@ def check_partners_compatibility(partner1_name: str, partner2_name: str) -> dict
         "partner1": partner1_name.strip(),
         "partner1_third_char": third_char1,
         "partner1_value": val1,
+        "partner1_repeated_first": repeated1,
         "partner2": partner2_name.strip(),
         "partner2_third_char": third_char2,
         "partner2_value": val2,
+        "partner2_repeated_first": repeated2,
         "raw_sum": raw_sum,
         "final_number": final_number,
         "result_meaning": meaning,
@@ -587,6 +605,10 @@ def generate_compatibility_html_report(res: dict) -> str:
     c1 = html.escape(res["partner1_third_char"])
     c2 = html.escape(res["partner2_third_char"])
     meaning = html.escape(res["result_meaning"])
+    notice = html.escape(TWO_LETTER_RULE_NOTICE)
+
+    p1_note = " (مكرر من أول حرف لكون الاسم ثنائياً)" if res["partner1_repeated_first"] else ""
+    p2_note = " (مكرر من أول حرف لكون الاسم ثنائياً)" if res["partner2_repeated_first"] else ""
 
     report_body = f"""
     <!DOCTYPE html>
@@ -615,6 +637,14 @@ def generate_compatibility_html_report(res: dict) -> str:
             .meta {{
                 color: #64748b;
                 font-size: 13px;
+            }}
+            .notice-box {{
+                background-color: #fffbeb;
+                border-right: 4px solid #d97706;
+                padding: 12px 16px;
+                margin-bottom: 20px;
+                color: #78350f;
+                font-size: 14px;
             }}
             table {{
                 width: 100%;
@@ -656,12 +686,13 @@ def generate_compatibility_html_report(res: dict) -> str:
             <h1>تقرير بحث التوافق بين الشريكين (من الحرف الثالث - الجُمَّل الصغير)</h1>
             <div class="meta">تاريخ الاستخراج: {now_str}</div>
         </div>
+        <div class="notice-box">{notice}</div>
         <table>
             <thead>
                 <tr>
                     <th>الطرف</th>
                     <th>الاسم الأول</th>
-                    <th>الحرف الثالث</th>
+                    <th>الحرف الثالث المعتمد</th>
                     <th>قيمته بالجُمَّل الصغير</th>
                 </tr>
             </thead>
@@ -669,13 +700,13 @@ def generate_compatibility_html_report(res: dict) -> str:
                 <tr>
                     <td>الشريك الأول</td>
                     <td>{p1}</td>
-                    <td><strong>{c1}</strong></td>
+                    <td><strong>{c1}</strong>{html.escape(p1_note)}</td>
                     <td><strong>{res['partner1_value']}</strong></td>
                 </tr>
                 <tr>
                     <td>الشريك الثاني</td>
                     <td>{p2}</td>
-                    <td><strong>{c2}</strong></td>
+                    <td><strong>{c2}</strong>{html.escape(p2_note)}</td>
                     <td><strong>{res['partner2_value']}</strong></td>
                 </tr>
             </tbody>
@@ -809,18 +840,19 @@ with tab2:
     st.markdown(
         "يتم أخذ الحرف الثالث من الاسم الأول لكل شريك واستخراج قيمته من جدول **الجُمَّل الصغير** ثم جمعهما واختزال الناتج إلى رقم مفرد (1 – 9)."
     )
+    st.info(TWO_LETTER_RULE_NOTICE)
 
     p_col1, p_col2 = st.columns(2)
     with p_col1:
         partner1_first_name = st.text_input(
             "الاسم الأول للشريك الأول:",
-            placeholder="مثال: سالم",
+            placeholder="مثال: سالم أو طه",
             key="compat_p1",
         )
     with p_col2:
         partner2_first_name = st.text_input(
             "الاسم الأول للشريك الثاني:",
-            placeholder="مثال: ليلى",
+            placeholder="مثال: ليلى أو مي",
             key="compat_p2",
         )
 
@@ -837,15 +869,22 @@ with tab2:
     if "last_compatibility_result" in st.session_state:
         comp_res = st.session_state["last_compatibility_result"]
 
+        if comp_res["partner1_repeated_first"] or comp_res["partner2_repeated_first"]:
+            st.warning(
+                "تم تطبيق قاعدة الاسم الثنائي: تم تكرار قيمة أول حرف كحرف ثالث للطرف الذي اسمه مكون من حرفين."
+            )
+
         m_col1, m_col2, m_col3 = st.columns(3)
         with m_col1:
+            p1_suffix = " (مكرر أول حرف)" if comp_res["partner1_repeated_first"] else ""
             st.metric(
-                label=f"الحرف الثالث ({comp_res['partner1']})",
+                label=f"الحرف الثالث ({comp_res['partner1']}){p1_suffix}",
                 value=f"{comp_res['partner1_third_char']} = {comp_res['partner1_value']}",
             )
         with m_col2:
+            p2_suffix = " (مكرر أول حرف)" if comp_res["partner2_repeated_first"] else ""
             st.metric(
-                label=f"الحرف الثالث ({comp_res['partner2']})",
+                label=f"الحرف الثالث ({comp_res['partner2']}){p2_suffix}",
                 value=f"{comp_res['partner2_third_char']} = {comp_res['partner2_value']}",
             )
         with m_col3:
