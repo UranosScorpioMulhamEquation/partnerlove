@@ -2,22 +2,99 @@ import streamlit as st
 import swisseph as swe
 import base64
 import datetime
+import html
 
 # ==========================================
 # 1. إعدادات الصفحة وتهيئة بيئة سويس إيفيمريس
 # ==========================================
-st.set_page_config(page_title="أسلوب جذب الشريك المتقدم", layout="wide", page_icon="✨")
+st.set_page_config(
+    page_title="أسلوب جذب الشريك المتقدم وميزان التوافق",
+    layout="wide",
+    page_icon="✨",
+)
 
 # تحديد مسار ملفات الإيفيميريس
-swe.set_ephe_path('/usr/share/ephe') 
+swe.set_ephe_path("/usr/share/ephe")
+
+# تنسيق الواجهة العربية (RTL) والهوية البصرية
+st.markdown(
+    """
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Cairo', 'Tajawal', sans-serif;
+        direction: rtl;
+        text-align: right;
+    }
+    .stApp {
+        background-color: #07090e;
+        color: #f8fafc;
+    }
+    .section-card {
+        background-color: #0e1322;
+        border: 1px solid rgba(253, 230, 138, 0.25);
+        border-radius: 14px;
+        padding: 20px;
+        margin-top: 14px;
+        margin-bottom: 18px;
+    }
+    .compat-result-box {
+        background: linear-gradient(135deg, rgba(2, 132, 199, 0.2), rgba(253, 230, 138, 0.1));
+        border: 1px solid #fde68a;
+        border-radius: 14px;
+        padding: 20px;
+        margin-top: 16px;
+        text-align: center;
+    }
+    .compat-num {
+        color: #fde68a;
+        font-size: 2rem;
+        font-weight: 800;
+    }
+    .compat-meaning {
+        color: #f8fafc;
+        font-size: 1.35rem;
+        font-weight: 700;
+        margin-top: 8px;
+    }
+    .stButton > button {
+        background: linear-gradient(90deg, #0284c7, #0369a1);
+        color: #ffffff;
+        font-weight: 700;
+        border: none;
+        border-radius: 10px;
+        padding: 0.6rem 1.2rem;
+    }
+    .stButton > button:hover {
+        background: linear-gradient(90deg, #0369a1, #075985);
+        color: #fde68a;
+    }
+    h1, h2, h3 {
+        color: #fde68a;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 # ==========================================
 # 2. القواميس الفلكية (البيانات المرجعية)
 # ==========================================
 
 ZODIAC_SIGNS = [
-    "الحمل", "الثور", "الجوزاء", "السرطان", "الأسد", "العذراء", 
-    "الميزان", "العقرب", "القوس", "الجدي", "الدلو", "الحوت"
+    "الحمل",
+    "الثور",
+    "الجوزاء",
+    "السرطان",
+    "الأسد",
+    "العذراء",
+    "الميزان",
+    "العقرب",
+    "القوس",
+    "الجدي",
+    "الدلو",
+    "الحوت",
 ]
 
 # قاموس "حدود المصريين" (Egyptian Terms)
@@ -29,11 +106,11 @@ EGYPTIAN_TERMS = {
     "الأسد": [(6, "المشتري"), (11, "الزهرة"), (18, "زحل"), (24, "عطارد"), (30, "المريخ")],
     "العذراء": [(7, "عطارد"), (17, "الزهرة"), (21, "المشتري"), (28, "المريخ"), (30, "زحل")],
     "الميزان": [(6, "زحل"), (14, "عطارد"), (21, "المشتري"), (28, "الزهرة"), (30, "المريخ")],
-    "العقرب": [(6, "المريخ"), (13, "الزهرة"), (21, "عطارد"), (28, "المشتري"), (30, "زحل")],
+    "العقرب": [(6, "المريخ"), (13, "الزهرة"), (21, "عطارد"), (28, "المريخ"), (30, "زحل")],
     "القوس": [(12, "المشتري"), (17, "الزهرة"), (21, "عطارد"), (26, "زحل"), (30, "المريخ")],
     "الجدي": [(7, "عطارد"), (14, "المشتري"), (22, "الزهرة"), (26, "زحل"), (30, "المريخ")],
     "الدلو": [(7, "عطارد"), (13, "الزهرة"), (20, "المشتري"), (25, "المريخ"), (30, "زحل")],
-    "الحوت": [(12, "الزهرة"), (16, "المشتري"), (19, "عطارد"), (28, "المريخ"), (30, "زحل")]
+    "الحوت": [(12, "الزهرة"), (16, "المشتري"), (19, "عطارد"), (28, "المريخ"), (30, "زحل")],
 }
 
 # ==========================================
@@ -100,11 +177,11 @@ DETAILED_MOON_INTERPRETATIONS = {
             <li>الشرح والتعبير بالكلمات أثناء التواصل الحميم؛ فالكلمة لديه بمثابة اللمسة الجسدية.</li>
         </ul></p>
         """
-    }
+    },
 }
 
 DETAILED_VENUS_INTERPRETATIONS = {
-    "الذكر": { # الزهرة لدى الرجل = ما يجذبه بصرياً وعاطفياً
+    "الذكر": {
         "الزهرة": """
         <p><strong>المحفز البصري والجذب العاطفي:</strong> يبحث هذا الرجل عن الأنوثة الكلاسيكية في أبهى صورها. يجذبه الجمال المتناسق، الأناقة الراقية، والأسلوب الناعم الهادئ. يكره الصراخ، المظاهر الخشنة، أو الإهمال في الجماليات.</p>
         <p><strong>ديناميكية الاستثارة والجذب:</strong> تشتعل رغبته عندما تتصرف الشريكة بدلال ورومانسية. يحب أن يشعر بأنه يعيش حالة من الدفء والانسجام الجمالي الحسي.</p>
@@ -154,9 +231,9 @@ DETAILED_VENUS_INTERPRETATIONS = {
             <li>تبادل النكات والتعليقات الذكية والمغازلة اللفظية المبتكرة.</li>
             <li>الاهتمام بالتنوع في المظهر وعدم التمسك بنمط واحد للظهور به.</li>
         </ul></p>
-        """
+        """,
     },
-    "أنثى": { # الزهرة لدى الأنثى = كيف تعيش أنوثتها وتتلقى الحب والمتعة
+    "أنثى": {
         "الزهرة": """
         <p><strong>أسلوب استقبال الحب والأنوثة:</strong> تعيش هذه الأنثى أنوثتها بأعلى درجات الرقة والنعومة. تستقبل الحب من خلال الرومانسية الكلاسيكية، الهدايا ذات الطابع الجمالي، والاهتمام بالتفاصيل الحسية الدافئة.</p>
         <p><strong>تجربة المتعة والرغبة:</strong> لكي تشعر بالمتعة الجسدية والعاطفية، تحتاج إلى تمهيد طويل، لمسات دافئة ونقية، وأجواء شاعرية خالية من أي عجلة أو قسوة.</p>
@@ -173,7 +250,7 @@ DETAILED_VENUS_INTERPRETATIONS = {
         <p><strong>أمثلة تطبيقية لمعاملتها:</strong>
         <ul>
             <li>إظهار الشغف والرغبة الجارحة فيها بوضوح ودون مواربة.</li>
-            <li>الابتعاد عن التردد أو الخجل في التعبير الحسي والجنسي معها.</li>
+            <li>الابتعاد التام عن التردد أو الخجل في التعبير الحسي والجنسي معها.</li>
             <li>توفير تجارب حميمة مفعمة بالحماس والحركة وكسر التابوهات الروتينية.</li>
         </ul></p>
         """,
@@ -206,12 +283,12 @@ DETAILED_VENUS_INTERPRETATIONS = {
             <li>التنوع في أساليب التعبير والاهتمام بالحوارات الحميمة الشيقة.</li>
             <li>استخدام التواصل النصي والصوتي الرقيق بين الحين والآخر خلال اليوم.</li>
         </ul></p>
-        """
-    }
+        """,
+    },
 }
 
 DETAILED_MARS_INTERPRETATIONS = {
-    "الذكر": { # المريخ لدى الذكر = أسلوب الأداء، المبادرة، وتفريغ الليبيدو
+    "الذكر": {
         "الزهرة": """
         <p><strong>أسلوب المبادرة والأداء:</strong> يتصرف هذا الرجل بنعومة ورومانسية حتى في أوقات الشغف العالي. مريخه الملون بطاقة الزهرة يجعله يكره العنف أو الأداء الخشن؛ يفضل أن تكون مبادراته مغلفة بالحنان والدلال.</p>
         <p><strong>تفريغ الطاقة والليبيدو:</strong> يرغب في أن يكون التعبير الحسي تبادلياً وجمالياً، يركز بشكل كبير على إمتاع الشريكة وإرضائها حسياً ونفسياً قبل إرضاء نفسه.</p>
@@ -261,9 +338,9 @@ DETAILED_MARS_INTERPRETATIONS = {
             <li>تغيير النمط أو الموقف الحركي لمنع شعوره بالملل أو التكرار.</li>
             <li>استخدام الذكاء والدعابة الخفيفة أثناء التمهيد اللفظي.</li>
         </ul></p>
-        """
+        """,
     },
-    "أنثى": { # المريخ لدى الأنثى = نوع الرجل والصفات التي تشعل رغبتها
+    "أنثى": {
         "الزهرة": """
         <p><strong>النموذج الجاذب للرغبة:</strong> تشعل رغبتها صفات الرجل الساحر، الأنيق، اللطيف، والذي يجيد معاملة النساء بنبل ورومانسية. تفر من الرجل الخشن أو العدائي.</p>
         <p><strong>إسقاط الشغف والليبيدو:</strong> تسقط رغبتها الشديدة على الرجل الذي يقدم لها التقدير الجمالي، والاهتمام بمظهرها، ويستفز رغبتها بلمسات ناعمة وأسلوب راقٍ.</p>
@@ -313,13 +390,42 @@ DETAILED_MARS_INTERPRETATIONS = {
             <li>استخدام الذكاء اللفظي والمزاح اللطيف لإثارة اهتمامها وفضولها.</li>
             <li>إظهار المرونة والتنوع في أسلوب التفكير والاهتمام بالسرعة والتفاعل الكلامي.</li>
         </ul></p>
-        """
-    }
+        """,
+    },
 }
 
 # ==========================================
-# 4. الدوال البرمجية (Functions)
+# 4. قاموس الجُمَّل الصغير ودلالات التوافق (1 - 9)
 # ==========================================
+
+JUMMAL_SAGHIR = {
+    "ا": 1, "أ": 1, "إ": 1, "آ": 1, "ى": 1, "ي": 1, "ئ": 1, "ق": 1, "غ": 1,
+    "ب": 2, "ك": 2, "ر": 2,
+    "ج": 3, "ل": 3, "ش": 3,
+    "د": 4, "م": 4, "ت": 4,
+    "ه": 5, "ة": 5, "ن": 5, "ث": 5,
+    "و": 6, "ؤ": 6, "س": 6, "خ": 6,
+    "ز": 7, "ع": 7, "ذ": 7,
+    "ح": 8, "ف": 8, "ض": 8,
+    "ط": 9, "ص": 9, "ظ": 9,
+}
+
+COMPATIBILITY_MEANINGS = {
+    1: "شخص من الطرفين عنيد جداً ومتمسك برأيه",
+    2: "استغلال بالعلاقة",
+    3: "حظ جيد",
+    4: "جيد في النصف الثاني من عمر العلاقة",
+    5: "عدم تفاهم بشيء يخص العاطفة / مشكلة مع الأولاد",
+    6: "غيرة مرضية",
+    7: "أزمة في العلاقة إن تجاوزوها استمروا",
+    8: "عدم توافق وتعب",
+    9: "انفصال",
+}
+
+# ==========================================
+# 5. الدوال البرمجية (Functions)
+# ==========================================
+
 
 def get_planet_position(year, month, day, hour, minute, tz_offset, planet_id):
     """تحسب موقع الكوكب بناءً على الوقت والتاريخ وتُرجع البرج والدرجة"""
@@ -327,10 +433,11 @@ def get_planet_position(year, month, day, hour, minute, tz_offset, planet_id):
     jd = swe.julday(year, month, day, utc_hour)
     pos, _ = swe.calc_ut(jd, planet_id)
     longitude = pos[0]
-    
+
     sign_idx = int(longitude / 30)
     degree = longitude % 30
     return ZODIAC_SIGNS[sign_idx], degree
+
 
 def get_term_ruler(sign, degree):
     """تستخرج حاكم الحد الفلكي بناءً على البرج والدرجة"""
@@ -339,28 +446,29 @@ def get_term_ruler(sign, degree):
             return ruler
     return "زحل"
 
+
 def generate_report(name, gender, moon_sign, moon_deg, venus_sign, venus_deg, mars_sign, mars_deg):
     """تولد التقرير التحليلي النفسي مفصلاً وموسعاً بناءً على الجنس والحدود"""
-    
+
     # حساب حكام الحدود
     moon_term = get_term_ruler(moon_sign, moon_deg)
     venus_term = get_term_ruler(venus_sign, venus_deg)
     mars_term = get_term_ruler(mars_sign, mars_deg)
 
-    report = f"<h2>التقرير التحليلي للهندسة النفسية والجنسية: {name}</h2>"
-    report += f"<p><strong>الجنس:</strong> {gender}</p><hr>"
-    
+    report = f"<h2>التقرير التحليلي للهندسة النفسية والجنسية: {html.escape(name)}</h2>"
+    report += f"<p><strong>الجنس:</strong> {html.escape(gender)}</p><hr>"
+
     # قسم الإحداثيات الفلكية
     report += "<h3>📍 المواقع الفلكية وحكام الحدود المستخرجة:</h3>"
-    report += f"<ul>"
+    report += "<ul>"
     report += f"<li><strong>القمر:</strong> برج {moon_sign} (الدرجة {moon_deg:.2f}) - يقع في **حد {moon_term}**</li>"
     report += f"<li><strong>الزهرة:</strong> برج {venus_sign} (الدرجة {venus_deg:.2f}) - تقع في **حد {venus_term}**</li>"
     report += f"<li><strong>المريخ:</strong> برج {mars_sign} (الدرجة {mars_deg:.2f}) - يقع في **حد {mars_term}**</li>"
-    report += f"</ul><hr>"
+    report += "</ul><hr>"
 
     # 1. تحليل القمر (مشترك)
     report += f"<h3>1. مفتاح الأمان والانفتاح العاطفي (القمر في {moon_sign} - حد {moon_term})</h3>"
-    report += f"<p>تمثل طاقة القمر المحرك الأساسي للاستقرار النفسي والشعور بالأمان لدى {name}. ورغم أن برج القمر هو ({moon_sign})، إلا أن فلترة الأمان الحقيقية والشروط الدقيقة يتم التحكم بها بواسطة حاكم الحد وهو (<strong>{moon_term}</strong>).</p>"
+    report += f"<p>تمثل طاقة القمر المحرك الأساسي للاستقرار النفسي والشعور بالأمان لدى {html.escape(name)}. ورغم أن برج القمر هو ({moon_sign})، إلا أن فلترة الأمان الحقيقية والشروط الدقيقة يتم التحكم بها بواسطة حاكم الحد وهو (<strong>{moon_term}</strong>).</p>"
     report += DETAILED_MOON_INTERPRETATIONS[moon_term]["analysis"]
     report += "<hr>"
 
@@ -377,7 +485,7 @@ def generate_report(name, gender, moon_sign, moon_deg, venus_sign, venus_deg, ma
         report += f"<p>يعبر المريخ عن كيفية ممارسة الرجل لشغفه وأسلوب أداءه الفعلي في العلاقة الحميمة وتفريغ طاقتهم الذكورية (الليبيدو). المريخ في ({mars_sign}) وحد (<strong>{mars_term}</strong>) يوضح نمط المبادرة والأداء الجسدي لديه.</p>"
         report += DETAILED_MARS_INTERPRETATIONS["الذكر"][mars_term]
 
-    else: # أنثى
+    else:
         # المريخ للأنثى (الرجل الذي يشعل رغبتها)
         report += f"<h3>2. نمط الرجل المحفز للرغبة والشغف (المريخ في {mars_sign} - حد {mars_term})</h3>"
         report += f"<p>يعبر المريخ في خريطة الأنثى عن صورة الرجل الذي يشعل رغبتها الجسدية والشغف لديها. وقوع مريخها في برج ({mars_sign}) وفي حد (<strong>{mars_term}</strong>) يكشف عن النموذج الذكوري الذي يستفز ليبيدو الأنثى لديها.</p>"
@@ -392,8 +500,9 @@ def generate_report(name, gender, moon_sign, moon_deg, venus_sign, venus_deg, ma
     report += "<hr><p><small>تم توليد التقرير بواسطة المحرك التنجيمي النفسي المتقدم - يعتمد على حدود المصريين وتقاطعات التحليل الكلاسيكي/الحديث.</small></p>"
     return report
 
+
 def generate_html_download(report_html):
-    """تحويل التقرير إلى ملف HTML قابل للتحميل للطباعة كـ PDF"""
+    """تحويل التقرير الفلكي إلى ملف HTML قابل للتحميل للطباعة كـ PDF"""
     html_template = f"""
     <!DOCTYPE html>
     <html dir="rtl" lang="ar">
@@ -401,7 +510,7 @@ def generate_html_download(report_html):
         <meta charset="UTF-8">
         <title>تقرير فلكي مفصل</title>
         <style>
-            body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.8; padding: 40px; color: #2c3e50; background-color: #fcfcfc; }}
+            body {{ font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.8; padding: 40px; color: #2c3e50; background-color: #fcfcfc; }}
             h2 {{ color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; margin-top: 20px; }}
             h3 {{ color: #16a085; margin-top: 25px; border-right: 4px solid #16a085; padding-right: 10px; }}
             p {{ font-size: 15px; margin-bottom: 12px; }}
@@ -409,6 +518,9 @@ def generate_html_download(report_html):
             li {{ margin-bottom: 8px; }}
             hr {{ border: 0; height: 1px; background: #d5dbdb; margin: 30px 0; }}
             strong {{ color: #2980b9; }}
+            @media print {{
+                body {{ background-color: #ffffff; padding: 15px; }}
+            }}
         </style>
     </head>
     <body>
@@ -417,82 +529,340 @@ def generate_html_download(report_html):
     </body>
     </html>
     """
-    b64 = base64.b64encode(html_template.encode('utf-8')).decode()
+    b64 = base64.b64encode(html_template.encode("utf-8")).decode()
     return f'<a href="data:text/html;base64,{b64}" download="Astrology_Detailed_Report.html" style="background-color: #3498db; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin-top: 15px; font-weight: bold;">📥 تحميل التقرير التفصيلي (HTML/PDF)</a>'
 
+
+def reduce_to_single_digit(n: int) -> int:
+    """اختزال المجموع إلى رقم مفرد من 1 إلى 9"""
+    if n <= 0:
+        return 0
+    rem = n % 9
+    return 9 if rem == 0 else rem
+
+
+def clean_first_name(name_str: str) -> str:
+    """الاحتفاظ بالحروف العربية المعتمدة في جدول الجُمَّل الصغير فقط"""
+    return "".join(ch for ch in name_str.strip() if ch in JUMMAL_SAGHIR)
+
+
+def check_partners_compatibility(partner1_name: str, partner2_name: str) -> dict:
+    """
+    حساب التوافق من الحرف الثالث للاسم الأول لكل شريك باستخدام الجُمَّل الصغير فقط.
+    """
+    clean1 = clean_first_name(partner1_name)
+    clean2 = clean_first_name(partner2_name)
+
+    if len(clean1) < 3 or len(clean2) < 3:
+        raise ValueError("يجب أن يتكون الاسم الأول لكل شريك من 3 أحرف عربية على الأقل.")
+
+    third_char1 = clean1[2]
+    third_char2 = clean2[2]
+
+    val1 = JUMMAL_SAGHIR[third_char1]
+    val2 = JUMMAL_SAGHIR[third_char2]
+
+    raw_sum = val1 + val2
+    final_number = reduce_to_single_digit(raw_sum)
+    meaning = COMPATIBILITY_MEANINGS[final_number]
+
+    return {
+        "partner1": partner1_name.strip(),
+        "partner1_third_char": third_char1,
+        "partner1_value": val1,
+        "partner2": partner2_name.strip(),
+        "partner2_third_char": third_char2,
+        "partner2_value": val2,
+        "raw_sum": raw_sum,
+        "final_number": final_number,
+        "result_meaning": meaning,
+    }
+
+
+def generate_compatibility_html_report(res: dict) -> str:
+    """توليد تقرير HTML منفصل وقابل للطباعة خاص ببحث التوافق بالجُمَّل الصغير"""
+    now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    p1 = html.escape(res["partner1"])
+    p2 = html.escape(res["partner2"])
+    c1 = html.escape(res["partner1_third_char"])
+    c2 = html.escape(res["partner2_third_char"])
+    meaning = html.escape(res["result_meaning"])
+
+    report_body = f"""
+    <!DOCTYPE html>
+    <html dir="rtl" lang="ar">
+    <head>
+        <meta charset="UTF-8">
+        <title>تقرير بحث التوافق بالجُمَّل الصغير - {p1} و {p2}</title>
+        <style>
+            body {{
+                font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.8;
+                padding: 36px;
+                color: #1e293b;
+                background-color: #ffffff;
+            }}
+            .header-box {{
+                border-bottom: 3px solid #0284c7;
+                padding-bottom: 12px;
+                margin-bottom: 24px;
+            }}
+            h1 {{
+                color: #0f172a;
+                margin: 0 0 6px 0;
+                font-size: 24px;
+            }}
+            .meta {{
+                color: #64748b;
+                font-size: 13px;
+            }}
+            table {{
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+            }}
+            th, td {{
+                border: 1px solid #cbd5e1;
+                padding: 12px;
+                text-align: center;
+            }}
+            th {{
+                background-color: #f1f5f9;
+                color: #0f172a;
+            }}
+            .result-box {{
+                margin-top: 24px;
+                padding: 20px;
+                border: 2px solid #0284c7;
+                border-radius: 10px;
+                background-color: #f8fafc;
+                text-align: center;
+            }}
+            .result-num {{
+                font-size: 28px;
+                font-weight: 800;
+                color: #0284c7;
+            }}
+            .result-desc {{
+                font-size: 18px;
+                font-weight: 700;
+                margin-top: 8px;
+                color: #0f172a;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="header-box">
+            <h1>تقرير بحث التوافق بين الشريكين (من الحرف الثالث - الجُمَّل الصغير)</h1>
+            <div class="meta">تاريخ الاستخراج: {now_str}</div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>الطرف</th>
+                    <th>الاسم الأول</th>
+                    <th>الحرف الثالث</th>
+                    <th>قيمته بالجُمَّل الصغير</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>الشريك الأول</td>
+                    <td>{p1}</td>
+                    <td><strong>{c1}</strong></td>
+                    <td><strong>{res['partner1_value']}</strong></td>
+                </tr>
+                <tr>
+                    <td>الشريك الثاني</td>
+                    <td>{p2}</td>
+                    <td><strong>{c2}</strong></td>
+                    <td><strong>{res['partner2_value']}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        <table>
+            <tbody>
+                <tr>
+                    <th>مجموع الحرفين الثالثين</th>
+                    <td>{res['partner1_value']} + {res['partner2_value']} = <strong>{res['raw_sum']}</strong></td>
+                </tr>
+                <tr>
+                    <th>الرقم النهائي (1 - 9)</th>
+                    <td><strong>{res['final_number']}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="result-box">
+            <div class="result-num">الرقم النهائي: {res['final_number']}</div>
+            <div class="result-desc">دلالة التوافق: {meaning}</div>
+        </div>
+        <script>window.print();</script>
+    </body>
+    </html>
+    """
+    return report_body
+
+
+def generate_compatibility_html_download(report_html):
+    """توليد رابط تحميل مستقل لتقرير التوافق القابل للطباعة"""
+    b64 = base64.b64encode(report_html.encode("utf-8")).decode()
+    return f'<a href="data:text/html;base64,{b64}" download="Compatibility_Jummal_Saghir_Report.html" style="background-color: #0284c7; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin-top: 12px; font-weight: bold;">🖨️ تحميل وطباعة تقرير التوافق المنفصل (HTML/PDF)</a>'
+
+
 # ==========================================
-# 5. واجهة المستخدم (Streamlit UI)
+# 6. واجهة المستخدم (Streamlit UI)
 # ==========================================
 
 st.title("✨ أسلوب الشريك العاطفي المفضل من خريطة تاريخ الميلاد (التقرير المفصل)")
-st.markdown("أداة تحليلية موسعة تحسب مواقع ( القمر - المريخ - الزهرة ) تلقائياً من برمجة الفلكي و المبرمج استرو رادار .")
+st.markdown(
+    "أداة تحليلية موسعة تحسب مواقع ( القمر - المريخ - الزهرة ) تلقائياً من برمجة الفلكي و المبرمج استرو رادار ."
+)
 
-col1, col2 = st.columns(2)
-with col1:
-    name = st.text_input("اسم الشريك:", "اكتب الاسم هنا...")
-with col2:
-    gender = st.radio("الجنس:", ["ذكر", "أنثى"])
+tab1, tab2 = st.tabs([
+    "🔮 التحليل الفلكي والحدود المصرية",
+    "🔎 بحث التوافق من الحرف الثالث (الجُمَّل الصغير)",
+])
 
-st.markdown("### بيانات الميلاد (لاستخراج الكواكب تلقائياً)")
-c1, c2, c3 = st.columns(3)
+with tab1:
+    col1, col2 = st.columns(2)
+    with col1:
+        name = st.text_input("اسم الشريك:", "اكتب الاسم هنا...")
+    with col2:
+        gender = st.radio("الجنس:", ["ذكر", "أنثى"])
 
-with c1:
-    birth_date = st.date_input("تاريخ الميلاد", value=datetime.date(2005, 1, 1), min_value=datetime.date(1960, 1, 1))
+    st.markdown("### بيانات الميلاد (لاستخراج الكواكب تلقائياً)")
+    c1, c2, c3 = st.columns(3)
 
-with c2:
-    birth_time = st.time_input("وقت الميلاد", value=datetime.time(12, 0), step=datetime.timedelta(minutes=5))
+    with c1:
+        birth_date = st.date_input(
+            "تاريخ الميلاد",
+            value=datetime.date(2005, 1, 1),
+            min_value=datetime.date(1960, 1, 1),
+        )
 
-with c3:
-    ARAB_TIMEZONES = {
-    "الإمارات العربية المتحدة (+4)": 4.0,
-    "سلطنة عُمان (+4)": 4.0,
-    "المملكة العربية السعودية (+3)": 3.0,
-    "قطر (+3)": 3.0,
-    "الكويت (+3)": 3.0,
-    "البحرين (+3)": 3.0,
-    "العراق (+3)": 3.0,
-    "اليمن (+3)": 3.0,
-    "الأردن (+3)": 3.0,
-    "سوريا - شتوي (+2)": 2.0,
-    "سوريا - صيفي (+3)": 3.0,
-    "الصومال (+3)": 3.0,
-    "جيبوتي (+3)": 3.0,
-    "جزر القمر (+3)": 3.0,
-    "مصر - شتوي (+2)": 2.0,
-    "مصر - صيفي (+3)": 3.0,
-    "فلسطين - شتوي (+2)": 2.0,
-    "فلسطين - صيفي (+3)": 3.0,
-    "لبنان - شتوي (+2)": 2.0,
-    "لبنان - صيفي (+3)": 3.0,
-    "السودان (+2)": 2.0,
-    "ليبيا (+2)": 2.0,
-    "تونس (+1)": 1.0,
-    "الجزائر (+1)": 1.0,
-    "المغرب (+1)": 1.0,
-    "المغرب - رمضان (0)": 0.0,
-    "موريتانيا (0)": 0.0,
-}
+    with c2:
+        birth_time = st.time_input(
+            "وقت الميلاد",
+            value=datetime.time(12, 0),
+            step=datetime.timedelta(minutes=5),
+        )
 
-# استخدامها في Streamlit كقائمة منسدلة:
-selected_country = st.selectbox("اختر الدولة لحساب التوقيت تلقائياً:", list(ARAB_TIMEZONES.keys()))
-tz_offset = ARAB_TIMEZONES[selected_country]
+    with c3:
+        ARAB_TIMEZONES = {
+            "الإمارات العربية المتحدة (+4)": 4.0,
+            "سلطنة عُمان (+4)": 4.0,
+            "المملكة العربية السعودية (+3)": 3.0,
+            "قطر (+3)": 3.0,
+            "الكويت (+3)": 3.0,
+            "البحرين (+3)": 3.0,
+            "العراق (+3)": 3.0,
+            "اليمن (+3)": 3.0,
+            "الأردن (+3)": 3.0,
+            "سوريا - شتوي (+2)": 2.0,
+            "سوريا - صيفي (+3)": 3.0,
+            "الصومال (+3)": 3.0,
+            "جيبوتي (+3)": 3.0,
+            "جزر القمر (+3)": 3.0,
+            "مصر - شتوي (+2)": 2.0,
+            "مصر - صيفي (+3)": 3.0,
+            "فلسطين - شتوي (+2)": 2.0,
+            "فلسطين - صيفي (+3)": 3.0,
+            "لبنان - شتوي (+2)": 2.0,
+            "لبنان - صيفي (+3)": 3.0,
+            "السودان (+2)": 2.0,
+            "ليبيا (+2)": 2.0,
+            "تونس (+1)": 1.0,
+            "الجزائر (+1)": 1.0,
+            "المغرب (+1)": 1.0,
+            "المغرب - رمضان (0)": 0.0,
+            "موريتانيا (0)": 0.0,
+        }
 
-if st.button("🔮 استخراج الكواكب وتوليد التقرير المفصل", use_container_width=True):
-    with st.spinner("جاري حساب المواقع الفلكية وتحليل الحدود بدقة..."):
-        
-        year, month, day = birth_date.year, birth_date.month, birth_date.day
-        hour, minute = birth_time.hour, birth_time.minute
-        
-        # استخراج الكواكب
-        moon_sign, moon_deg = get_planet_position(year, month, day, hour, minute, tz_offset, swe.MOON)
-        venus_sign, venus_deg = get_planet_position(year, month, day, hour, minute, tz_offset, swe.VENUS)
-        mars_sign, mars_deg = get_planet_position(year, month, day, hour, minute, tz_offset, swe.MARS)
-        
-        # توليد التقرير
-        report = generate_report(name, gender, moon_sign, moon_deg, venus_sign, venus_deg, mars_sign, mars_deg)
-        
-        st.success("تم حساب المواقع وتوليد التقرير الممتد بنجاح!")
-        st.markdown(report, unsafe_allow_html=True)
-        
-        # زر التصدير
-        st.markdown(generate_html_download(report), unsafe_allow_html=True)
+        # استخدامها في Streamlit كقائمة منسدلة:
+        selected_country = st.selectbox(
+            "اختر الدولة لحساب التوقيت تلقائياً:",
+            list(ARAB_TIMEZONES.keys()),
+        )
+        tz_offset = ARAB_TIMEZONES[selected_country]
+
+    if st.button("🔮 استخراج الكواكب وتوليد التقرير المفصل", use_container_width=True):
+        with st.spinner("جاري حساب المواقع الفلكية وتحليل الحدود بدقة..."):
+            year, month, day = birth_date.year, birth_date.month, birth_date.day
+            hour, minute = birth_time.hour, birth_time.minute
+
+            # استخراج الكواكب
+            moon_sign, moon_deg = get_planet_position(year, month, day, hour, minute, tz_offset, swe.MOON)
+            venus_sign, venus_deg = get_planet_position(year, month, day, hour, minute, tz_offset, swe.VENUS)
+            mars_sign, mars_deg = get_planet_position(year, month, day, hour, minute, tz_offset, swe.MARS)
+
+            # توليد التقرير
+            report = generate_report(name, gender, moon_sign, moon_deg, venus_sign, venus_deg, mars_sign, mars_deg)
+
+            st.success("تم حساب المواقع وتوليد التقرير الممتد بنجاح!")
+            st.markdown(report, unsafe_allow_html=True)
+
+            # زر التصدير الخاص بالتقرير الفلكي
+            st.markdown(generate_html_download(report), unsafe_allow_html=True)
+
+with tab2:
+    st.markdown("### 🔎 بحث التوافق بين الشريكين من الحرف الثالث (الجُمَّل الصغير)")
+    st.markdown(
+        "يتم أخذ الحرف الثالث من الاسم الأول لكل شريك واستخراج قيمته من جدول **الجُمَّل الصغير** ثم جمعهما واختزال الناتج إلى رقم مفرد (1 – 9)."
+    )
+
+    p_col1, p_col2 = st.columns(2)
+    with p_col1:
+        partner1_first_name = st.text_input(
+            "الاسم الأول للشريك الأول:",
+            placeholder="مثال: سالم",
+            key="compat_p1",
+        )
+    with p_col2:
+        partner2_first_name = st.text_input(
+            "الاسم الأول للشريك الثاني:",
+            placeholder="مثال: ليلى",
+            key="compat_p2",
+        )
+
+    if st.button("🔎 بحث التوافق", key="btn_search_compatibility", use_container_width=True):
+        if not partner1_first_name.strip() or not partner2_first_name.strip():
+            st.warning("يرجى إدخال الاسم الأول لكل من الشريكين.")
+        else:
+            try:
+                comp_res = check_partners_compatibility(partner1_first_name, partner2_first_name)
+                st.session_state["last_compatibility_result"] = comp_res
+            except ValueError as err:
+                st.error(str(err))
+
+    if "last_compatibility_result" in st.session_state:
+        comp_res = st.session_state["last_compatibility_result"]
+
+        m_col1, m_col2, m_col3 = st.columns(3)
+        with m_col1:
+            st.metric(
+                label=f"الحرف الثالث ({comp_res['partner1']})",
+                value=f"{comp_res['partner1_third_char']} = {comp_res['partner1_value']}",
+            )
+        with m_col2:
+            st.metric(
+                label=f"الحرف الثالث ({comp_res['partner2']})",
+                value=f"{comp_res['partner2_third_char']} = {comp_res['partner2_value']}",
+            )
+        with m_col3:
+            st.metric(
+                label="المجموع والرقم النهائي",
+                value=f"{comp_res['raw_sum']} ← {comp_res['final_number']}",
+            )
+
+        st.markdown(
+            f"""
+            <div class="compat-result-box">
+                <div>نتيجة التوافق للرقم النهائي ({comp_res['final_number']})</div>
+                <div class="compat-meaning">{html.escape(comp_res['result_meaning'])}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        compat_html_report = generate_compatibility_html_report(comp_res)
+        st.markdown(generate_compatibility_html_download(compat_html_report), unsafe_allow_html=True)
