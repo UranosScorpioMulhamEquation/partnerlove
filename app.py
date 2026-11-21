@@ -67,6 +67,14 @@ st.markdown(
         border: 1px solid rgba(253, 230, 138, 0.2);
         line-height: 1.85;
     }
+    .fertility-box {
+        background-color: rgba(14, 19, 34, 0.9);
+        border: 1px solid rgba(253, 230, 138, 0.35);
+        border-radius: 12px;
+        padding: 18px;
+        margin-top: 16px;
+        line-height: 1.85;
+    }
     .stButton > button {
         background: linear-gradient(90deg, #0284c7, #0369a1);
         color: #ffffff;
@@ -654,10 +662,66 @@ def extract_third_char_with_two_letter_rule(cleaned_name: str) -> tuple[str, boo
     return cleaned_name[2], False
 
 
-def check_partners_compatibility(partner1_name: str, partner2_name: str) -> dict:
+def sum_name_jummal_saghir(name_str: str) -> tuple[str, list[tuple[str, int]], int]:
+    """حساب مجموع حروف الاسم كاملاً وفق جدول الجُمَّل الصغير"""
+    cleaned = clean_first_name(name_str)
+    items = [(ch, JUMMAL_SAGHIR[ch]) for ch in cleaned]
+    total = sum(val for _, val in items)
+    return cleaned, items, total
+
+
+def calculate_fertility_equation(partner1_name: str, partner2_name: str, mother_name: str) -> dict:
+    """
+    تطبيق المعادلة الواردة في الصورة:
+    جمع حروف (اسم الشريك الأول + اسم الشريك الثاني + اسم أم الشريك) بحساب الجُمَّل الصغير،
+    ثم طرح 13 والاستمرار بالطرح طالما الناتج أكبر من 13:
+    - إذا كان الباقي أقل من 13: يدعم طاقة الإنجاب
+    - إذا أعطى الرقم 13 فقط: لا يدعم طاقة الإنجاب
+    """
+    clean1, items1, sum1 = sum_name_jummal_saghir(partner1_name)
+    clean2, items2, sum2 = sum_name_jummal_saghir(partner2_name)
+    clean_m, items_m, sum_m = sum_name_jummal_saghir(mother_name)
+
+    combined_sum = sum1 + sum2 + sum_m
+    steps = []
+    current = combined_sum
+
+    while current > 13:
+        next_val = current - 13
+        steps.append((current, 13, next_val))
+        current = next_val
+
+    if current < 13:
+        verdict = "يدعم طاقة الإنجاب"
+        verdict_detail = f"الباقي النهائي ({current}) أقل من 13، وعليه: يدعم طاقة الإنجاب."
+    else:
+        verdict = "لا يدعم طاقة الإنجاب"
+        verdict_detail = "الباقي النهائي يساوي (13) فقط، وعليه: لا يدعم طاقة الإنجاب."
+
+    return {
+        "partner1_clean": clean1,
+        "partner1_items": items1,
+        "partner1_sum": sum1,
+        "partner2_clean": clean2,
+        "partner2_items": items2,
+        "partner2_sum": sum2,
+        "mother_name": mother_name.strip(),
+        "mother_clean": clean_m,
+        "mother_items": items_m,
+        "mother_sum": sum_m,
+        "combined_sum": combined_sum,
+        "subtraction_steps": steps,
+        "final_remainder": current,
+        "fertility_verdict": verdict,
+        "fertility_detail": verdict_detail,
+    }
+
+
+def check_partners_compatibility(partner1_name: str, partner2_name: str, mother_name: str = "") -> dict:
     """
     حساب التوافق من الحرف الثالث للاسم الأول لكل شريك باستخدام الجُمَّل الصغير فقط.
     في حال كان الاسم مكوناً من حرفين يتم تكرار قيمة أول حرف.
+    مع حساب معادلة الإنجاب (اسم الشريك الأول + اسم الشريك الثاني + اسم أم الشريك - 13 ...).
     """
     clean1 = clean_first_name(partner1_name)
     clean2 = clean_first_name(partner2_name)
@@ -676,6 +740,13 @@ def check_partners_compatibility(partner1_name: str, partner2_name: str) -> dict
     meaning = COMPATIBILITY_MEANINGS[final_number]
     detailed_meaning = DETAILED_COMPATIBILITY_INTERPRETATIONS[final_number]
 
+    fertility_data = None
+    if mother_name.strip():
+        clean_m = clean_first_name(mother_name)
+        if len(clean_m) < 1:
+            raise ValueError("يرجى إدخال اسم أم الشريك بحروف عربية صحيحة.")
+        fertility_data = calculate_fertility_equation(partner1_name, partner2_name, mother_name)
+
     return {
         "partner1": partner1_name.strip(),
         "partner1_third_char": third_char1,
@@ -689,11 +760,12 @@ def check_partners_compatibility(partner1_name: str, partner2_name: str) -> dict
         "final_number": final_number,
         "result_meaning": meaning,
         "detailed_meaning": detailed_meaning,
+        "fertility": fertility_data,
     }
 
 
 def generate_compatibility_html_report(res: dict) -> str:
-    """توليد تقرير HTML منفصل وقابل للطباعة خاص ببحث التوافق بالجُمَّل الصغير"""
+    """توليد تقرير HTML منفصل وقابل للطباعة خاص ببحث التوافق بالجُمَّل الصغير ومعادلة الإنجاب"""
     now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     p1 = html.escape(res["partner1"])
     p2 = html.escape(res["partner2"])
@@ -705,6 +777,42 @@ def generate_compatibility_html_report(res: dict) -> str:
 
     p1_note = " (مكرر من أول حرف لكون الاسم ثنائياً)" if res["partner1_repeated_first"] else ""
     p2_note = " (مكرر من أول حرف لكون الاسم ثنائياً)" if res["partner2_repeated_first"] else ""
+
+    fertility_section_html = ""
+    if res.get("fertility"):
+        fert = res["fertility"]
+        m_esc = html.escape(fert["mother_name"])
+        p1_letters_str = " + ".join(f"{ch}({v})" for ch, v in fert["partner1_items"])
+        p2_letters_str = " + ".join(f"{ch}({v})" for ch, v in fert["partner2_items"])
+        m_letters_str = " + ".join(f"{ch}({v})" for ch, v in fert["mother_items"])
+
+        if fert["subtraction_steps"]:
+            steps_html = "<br>".join(
+                f"{before} - {sub} = <strong>{after}</strong>"
+                for before, sub, after in fert["subtraction_steps"]
+            )
+        else:
+            steps_html = f"المجموع ({fert['combined_sum']}) أقل من أو يساوي 13، فلا حاجة لخطوة طرح إضافية ← الباقي: <strong>{fert['final_remainder']}</strong>"
+
+        fertility_section_html = f"""
+        <div class="result-box" style="margin-top: 24px; border-color: #d97706;">
+            <div class="result-num" style="color: #b45309; font-size: 22px;">
+                معادلة طاقة الإنجاب (اسم الشريك الأول + اسم الشريك الثاني + اسم أم الشريك - 13)
+            </div>
+            <div style="margin-top: 14px; text-align: right; line-height: 1.85;">
+                <p><strong>1. حروف اسم الشريك الأول ({p1}):</strong> {html.escape(p1_letters_str)} = <strong>{fert['partner1_sum']}</strong></p>
+                <p><strong>2. حروف اسم الشريك الثاني ({p2}):</strong> {html.escape(p2_letters_str)} = <strong>{fert['partner2_sum']}</strong></p>
+                <p><strong>3. حروف اسم أم الشريك ({m_esc}):</strong> {html.escape(m_letters_str)} = <strong>{fert['mother_sum']}</strong></p>
+                <p><strong>المجموع الكلي للأسماء الثلاثة:</strong> {fert['partner1_sum']} + {fert['partner2_sum']} + {fert['mother_sum']} = <strong>{fert['combined_sum']}</strong></p>
+                <p><strong>خطوات الطرح المتتالية من (13):</strong><br>{steps_html}</p>
+                <p><strong>الباقي النهائي:</strong> <strong>{fert['final_remainder']}</strong></p>
+            </div>
+            <div class="result-desc" style="color: #92400e; margin-top: 14px;">
+                النتيجة: {html.escape(fert['fertility_verdict'])}
+            </div>
+            <p style="text-align: center; margin: 0;">{html.escape(fert['fertility_detail'])}</p>
+        </div>
+        """
 
     report_body = f"""
     <!DOCTYPE html>
@@ -837,6 +945,7 @@ def generate_compatibility_html_report(res: dict) -> str:
             <div class="result-desc">دلالة التوافق: {meaning}</div>
             <div class="details-section">{detailed_meaning}</div>
         </div>
+        {fertility_section_html}
         <script>window.print();</script>
     </body>
     </html>
@@ -855,10 +964,9 @@ def generate_compatibility_html_download(report_html):
 # ==========================================
 
 st.title("✨ أسلوب الشريك العاطفي المفضل من خريطة تاريخ الميلاد (التقرير المفصل)")
-st.markdown("أداة تحليلية موسعة تحسب مواقع ( القمر - المريخ - الزهرة ) تلقائياً .")
-st.markdown("مع بحث التوافق بين الشريكين من الحرف الثالث من الجُمَّل الصغير")
-st.markdown("برمجة الفلكي استرو رادار")
-st.markdown("---")
+st.markdown(
+    "أداة تحليلية موسعة تحسب مواقع ( القمر - المريخ - الزهرة ) تلقائياً من برمجة الفلكي و المبرمج استرو رادار ."
+)
 
 tab1, tab2 = st.tabs([
     "🔮 التحليل الفلكي والحدود المصرية",
@@ -953,7 +1061,7 @@ with tab2:
     )
     st.info(TWO_LETTER_RULE_NOTICE)
 
-    p_col1, p_col2 = st.columns(2)
+    p_col1, p_col2, p_col3 = st.columns(3)
     with p_col1:
         partner1_first_name = st.text_input(
             "الاسم الأول للشريك الأول:",
@@ -966,13 +1074,23 @@ with tab2:
             placeholder="مثال: ليلى أو مي",
             key="compat_p2",
         )
+    with p_col3:
+        partner_mother_name = st.text_input(
+            "اسم أم الشريك:",
+            placeholder="مثال: مي",
+            key="compat_mother",
+        )
 
     if st.button("🔎 بحث التوافق", key="btn_search_compatibility", use_container_width=True):
         if not partner1_first_name.strip() or not partner2_first_name.strip():
             st.warning("يرجى إدخال الاسم الأول لكل من الشريكين.")
         else:
             try:
-                comp_res = check_partners_compatibility(partner1_first_name, partner2_first_name)
+                comp_res = check_partners_compatibility(
+                    partner1_first_name,
+                    partner2_first_name,
+                    partner_mother_name,
+                )
                 st.session_state["last_compatibility_result"] = comp_res
             except ValueError as err:
                 st.error(str(err))
@@ -1014,6 +1132,43 @@ with tab2:
             """,
             unsafe_allow_html=True,
         )
+
+        if comp_res.get("fertility"):
+            fert = comp_res["fertility"]
+            p1_expr = " + ".join(f"{ch}({v})" for ch, v in fert["partner1_items"])
+            p2_expr = " + ".join(f"{ch}({v})" for ch, v in fert["partner2_items"])
+            m_expr = " + ".join(f"{ch}({v})" for ch, v in fert["mother_items"])
+
+            if fert["subtraction_steps"]:
+                steps_display = "<br>".join(
+                    f"{before} - {sub} = <strong>{after}</strong>"
+                    for before, sub, after in fert["subtraction_steps"]
+                )
+            else:
+                steps_display = (
+                    f"المجموع ({fert['combined_sum']}) أقل من أو يساوي 13، فلا حاجة لخطوة طرح إضافية "
+                    f"← الباقي: <strong>{fert['final_remainder']}</strong>"
+                )
+
+            st.markdown(
+                f"""
+                <div class="fertility-box">
+                    <div style="color:#fde68a; font-size:1.25rem; font-weight:800; margin-bottom:10px;">
+                        🧬 معادلة طاقة الإنجاب (اسم الشريك الأول + اسم الشريك الثاني + اسم أم الشريك - 13)
+                    </div>
+                    <div>• حروف <strong>{html.escape(comp_res['partner1'])}</strong>: {html.escape(p1_expr)} = <strong>{fert['partner1_sum']}</strong></div>
+                    <div>• حروف <strong>{html.escape(comp_res['partner2'])}</strong>: {html.escape(p2_expr)} = <strong>{fert['partner2_sum']}</strong></div>
+                    <div>• حروف اسم الأم (<strong>{html.escape(fert['mother_name'])}</strong>): {html.escape(m_expr)} = <strong>{fert['mother_sum']}</strong></div>
+                    <div style="margin-top:8px;">• المجموع الكلي: <strong>{fert['combined_sum']}</strong></div>
+                    <div style="margin-top:8px;">• خطوات الطرح من (13):<br>{steps_display}</div>
+                    <div style="margin-top:10px; font-size:1.2rem; color:#fde68a; font-weight:800;">
+                        الباقي النهائي ({fert['final_remainder']}) ← {html.escape(fert['fertility_verdict'])}
+                    </div>
+                    <div style="color:#cbd5e1; margin-top:4px;">{html.escape(fert['fertility_detail'])}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
         compat_html_report = generate_compatibility_html_report(comp_res)
         st.markdown(generate_compatibility_html_download(compat_html_report), unsafe_allow_html=True)
