@@ -43,20 +43,29 @@ st.markdown(
         background: linear-gradient(135deg, rgba(2, 132, 199, 0.2), rgba(253, 230, 138, 0.1));
         border: 1px solid #fde68a;
         border-radius: 14px;
-        padding: 20px;
+        padding: 22px;
         margin-top: 16px;
-        text-align: center;
     }
     .compat-num {
         color: #fde68a;
         font-size: 2rem;
         font-weight: 800;
+        text-align: center;
     }
     .compat-meaning {
         color: #f8fafc;
         font-size: 1.35rem;
         font-weight: 700;
         margin-top: 8px;
+        text-align: center;
+        margin-bottom: 16px;
+    }
+    .compat-details {
+        background-color: rgba(7, 9, 14, 0.55);
+        border-radius: 10px;
+        padding: 16px;
+        border: 1px solid rgba(253, 230, 138, 0.2);
+        line-height: 1.85;
     }
     .stButton > button {
         background: linear-gradient(90deg, #0284c7, #0369a1);
@@ -395,7 +404,7 @@ DETAILED_MARS_INTERPRETATIONS = {
 }
 
 # ==========================================
-# 4. قاموس الجُمَّل الصغير ودلالات التوافق (1 - 9)
+# 4. قاموس الجُمَّل الصغير ودلالات التوافق الموسّعة (1 - 9)
 # ==========================================
 
 JUMMAL_SAGHIR = {
@@ -420,6 +429,90 @@ COMPATIBILITY_MEANINGS = {
     7: "أزمة في العلاقة إن تجاوزوها استمروا",
     8: "عدم توافق وتعب",
     9: "انفصال",
+}
+
+DETAILED_COMPATIBILITY_INTERPRETATIONS = {
+    1: """
+    <p><strong>التحليل الجفري للمرتبة (1):</strong> الواحد في الجفر رمز الوحدة والانفراد والذاتية؛ وعندما يظهر في ميزان التوافق يشير إلى تمركز القرار أو الرأي في نقطة صلبة لا تقبل التنازل السريع لدى أحد الطرفين. الصراع هنا لا ينبع غالباً من انعدام المحبة، بل من محاولة إثبات الذات وفرض التصور الشخصي على مجرى العلاقة.</p>
+    <p><strong>مفاتيح التعامل والموازنة:</strong>
+    <ul>
+        <li>فصل الموقف العملي عن المكانة الشخصية حتى لا يُفهم الاختلاف كإهانة أو هزيمة.</li>
+        <li>توزيع مساحات الرأي والقرار بوضوح وتجنب سباق إثبات من يفرض كلمته أولاً.</li>
+        <li>اعتماد الحوار الهادئ المبني على المصالح المشتركة بدلاً من الجدل الحاد.</li>
+    </ul></p>
+    """,
+    2: """
+    <p><strong>التحليل الجفري للمرتبة (2):</strong> الاثنين في ميزان التوافق تعكس ثنائية غير متكافئة في الأخذ والعطاء؛ إذ يميل أحد الطرفين إلى التحميل أو الانتفاع (مادياً أو عاطفياً أو نفسياً أو اجتماعياً) بينما يبذل الآخر أكثر مما يتلقى أو يغفل عن حدوده الذاتية.</p>
+    <p><strong>مفاتيح التعامل والموازنة:</strong>
+    <ul>
+        <li>وضع حدود واضحة ومعلنة منذ البداية في الالتزامات المادية والعاطفية والعملية.</li>
+        <li>مراقبة التوازن بين العطاء والتقدير المتبادل وعدم التمادي في التنازل المجحف.</li>
+        <li>الوضوح المباشر عند الشعور بوجود عبء غير عادل قبل تراكم الاستياء.</li>
+    </ul></p>
+    """,
+    3: """
+    <p><strong>التحليل الجفري للمرتبة (3):</strong> الثلاثة في الجفر عدد نمو وتيسير وتلاقٍ؛ وهي من الدلالات الإيجابية التي تشير إلى سلاسة في التفاهم العام، وتقبّل متبادل، وفرص أفضل لتجاوز العقبات اليومية بمرونة وروح إيجابية.</p>
+    <p><strong>مفاتيح التعامل والموازنة:</strong>
+    <ul>
+        <li>استثمار هذا الانسجام في بناء تقاليد مشتركة وحوار صريح ومفتوح.</li>
+        <li>تجنب الاتكال الكامل على تيسير البدايات دون رعاية العلاقة بالاهتمام والمتابعة.</li>
+        <li>الحفاظ على روح المرح والتفاهم عند مواجهة ضغوط الحياة المعتادة.</li>
+    </ul></p>
+    """,
+    4: """
+    <p><strong>التحليل الجفري للمرتبة (4):</strong> الأربعة عدد الاستقرار والأساس والبناء التدريجي؛ ودلالتها هنا تفيد بأن البدايات قد تتسم بالاختبار، أو التريث، أو ترتيب الأولويات والالتزامات، ثم تكتسب العلاقة صلابة ونضجاً وثمراً أوضح في مرحلتها الثانية بعد أن تستقر القواعد.</p>
+    <p><strong>مفاتيح التعامل والموازنة:</strong>
+    <ul>
+        <li>الصبر على مسار النضج وعدم استعجال الأحكام الجازمة من المراحل الأولى.</li>
+        <li>التركيز على بناء الثقة والالتزام الفعلي خطوة بخطوة وتثبيت الأسس العملية.</li>
+        <li>احترام اختلاف سرعة التكيف بين الطرفين حتى تبلغ العلاقة نضجها الطبيعي.</li>
+    </ul></p>
+    """,
+    5: """
+    <p><strong>التحليل الجفري للمرتبة (5):</strong> الخمسة في حسابات الحرف والتوافق ترتبط بالحركة والتقلب وتباين الإيقاع؛ وفي هذا الميزان تبرز حساسيتان دقيقتان: إما اختلاف في لغة التعبير العاطفي والاحتياج الوجداني بين الطرفين، وإما احتكاك وتباين في وجهات النظر أو الشؤون المتعلقة بالأولاد والتربية.</p>
+    <p><strong>مفاتيح التعامل والموازنة:</strong>
+    <ul>
+        <li>التصريح الواضح بالاحتياجات العاطفية دون انتظار قراءة الأفكار أو التلميحات المبهمة.</li>
+        <li>توحيد المرجعية التربوية والاتفاق المسبق على القواعد الأساسية المتعلقة بالأولاد.</li>
+        <li>عدم جعل الخلاف العاطفي أو التربوي ساحة لتصفية حسابات قديمة.</li>
+    </ul></p>
+    """,
+    6: """
+    <p><strong>التحليل الجفري للمرتبة (6):</strong> الستة عدد التجاذب والارتباط الشديد والانشغال بالآخر؛ وعندما تتجاوز حدودها الصحية تتحول إلى غيرة حارقة أو شك أو رقابة تُثقل كاهل العلاقة وتستنزف طمأنينة الطرفين.</p>
+    <p><strong>مفاتيح التعامل والموازنة:</strong>
+    <ul>
+        <li>معالجة جذور القلق والأمان الداخلي بصراحة وهدوء دون اتهامات جارحة.</li>
+        <li>تقديم طمأنة واضحة متوازنة لا تلغي الخصوصية الفردية ولا تغذي الشك.</li>
+        <li>الابتعاد عن أساليب المراقبة أو الاستفزاز التي تزيد حدة الغيرة المرضية.</li>
+    </ul></p>
+    """,
+    7: """
+    <p><strong>التحليل الجفري للمرتبة (7):</strong> السبعة في علوم الجفر عدد الامتحان والتمحيص والانتقال من طور إلى طور؛ فهي تنبّه إلى اختبار مفصلي أو أزمة حقيقية تمر بها العلاقة، فإن وُفق الطرفان لعبورها بوعي وحكمة صارت العلاقة أعمق وأكثر ثباتاً واستمراراً.</p>
+    <p><strong>مفاتيح التعامل والموازنة:</strong>
+    <ul>
+        <li>عدم التهرب من مواجهة جوهر الأزمة عند ظهورها أو تأجيل معالجتها حتى تتفاقم.</li>
+        <li>التحلي بالحكمة وضبط الانفعال وقت الاختبار حتى يتحول إلى نقطة تحوّل إيجابية.</li>
+        <li>التعاون كفريق واحد لعبور المرحلة الحرجة بدلاً من تبادل اللوم فقط.</li>
+    </ul></p>
+    """,
+    8: """
+    <p><strong>التحليل الجفري للمرتبة (8):</strong> الثمانية عدد الثقل والمقاومة وتضارب المحاور؛ وتشير هنا إلى إرهاق متراكم أو صعوبة في إيجاد إيقاع مشترك مريح، مما يجعل استمرار العلاقة يتطلب جهداً مضاعفاً واستنزافاً نفسياً أو عملياً إذا لم يُعالج بوعي.</p>
+    <p><strong>مفاتيح التعامل والموازنة:</strong>
+    <ul>
+        <li>تقييم مصادر الإرهاق بدقة والتمييز بين ضغوط الظروف الخارجية وتصادم الطبائع المباشر.</li>
+        <li>تخفيف حدة الاحتكاك اليومي وإعادة توزيع الأعباء بشكل واقعي وممكن.</li>
+        <li>مراجعة قدرة الطرفين على الاستمرار دون استنزاف دائم للصحة النفسية والذهنية.</li>
+    </ul></p>
+    """,
+    9: """
+    <p><strong>التحليل الجفري للمرتبة (9):</strong> التسعة في الدورات العددية رمز الختام واكتمال الدورة؛ وفي هذا الميزان تشير إلى احتمالية الانفصال أو انتهاء مسار العلاقة بصورتها الحالية عندما يبلغ التباين ذروته أو تكتمل دورتها.</p>
+    <p><strong>مفاتيح التعامل والموازنة:</strong>
+    <ul>
+        <li>التعامل مع الأمر بواقعية واتزان بعيداً عن الاندفاع العاطفي اللحظي.</li>
+        <li>الوضوح والمصارحة في تقييم مدى صلاحية الاستمرار أو ضرورة طي الصفحة.</li>
+        <li>حفظ الحقوق والاحترام المتبادل في حال كان الانفصال هو المسار الأصح والأقل ضرراً للطرفين.</li>
+    </ul></p>
+    """,
 }
 
 TWO_LETTER_RULE_NOTICE = (
@@ -581,6 +674,7 @@ def check_partners_compatibility(partner1_name: str, partner2_name: str) -> dict
     raw_sum = val1 + val2
     final_number = reduce_to_single_digit(raw_sum)
     meaning = COMPATIBILITY_MEANINGS[final_number]
+    detailed_meaning = DETAILED_COMPATIBILITY_INTERPRETATIONS[final_number]
 
     return {
         "partner1": partner1_name.strip(),
@@ -594,6 +688,7 @@ def check_partners_compatibility(partner1_name: str, partner2_name: str) -> dict
         "raw_sum": raw_sum,
         "final_number": final_number,
         "result_meaning": meaning,
+        "detailed_meaning": detailed_meaning,
     }
 
 
@@ -605,6 +700,7 @@ def generate_compatibility_html_report(res: dict) -> str:
     c1 = html.escape(res["partner1_third_char"])
     c2 = html.escape(res["partner2_third_char"])
     meaning = html.escape(res["result_meaning"])
+    detailed_meaning = res["detailed_meaning"]
     notice = html.escape(TWO_LETTER_RULE_NOTICE)
 
     p1_note = " (مكرر من أول حرف لكون الاسم ثنائياً)" if res["partner1_repeated_first"] else ""
@@ -619,7 +715,7 @@ def generate_compatibility_html_report(res: dict) -> str:
         <style>
             body {{
                 font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                line-height: 1.8;
+                line-height: 1.85;
                 padding: 36px;
                 color: #1e293b;
                 background-color: #ffffff;
@@ -662,22 +758,35 @@ def generate_compatibility_html_report(res: dict) -> str:
             }}
             .result-box {{
                 margin-top: 24px;
-                padding: 20px;
+                padding: 22px;
                 border: 2px solid #0284c7;
                 border-radius: 10px;
                 background-color: #f8fafc;
-                text-align: center;
             }}
             .result-num {{
                 font-size: 28px;
                 font-weight: 800;
                 color: #0284c7;
+                text-align: center;
             }}
             .result-desc {{
                 font-size: 18px;
                 font-weight: 700;
                 margin-top: 8px;
+                margin-bottom: 16px;
                 color: #0f172a;
+                text-align: center;
+            }}
+            .details-section {{
+                border-top: 1px solid #cbd5e1;
+                padding-top: 14px;
+                text-align: right;
+            }}
+            ul {{
+                padding-right: 24px;
+            }}
+            li {{
+                margin-bottom: 8px;
             }}
         </style>
     </head>
@@ -726,6 +835,7 @@ def generate_compatibility_html_report(res: dict) -> str:
         <div class="result-box">
             <div class="result-num">الرقم النهائي: {res['final_number']}</div>
             <div class="result-desc">دلالة التوافق: {meaning}</div>
+            <div class="details-section">{detailed_meaning}</div>
         </div>
         <script>window.print();</script>
     </body>
@@ -896,8 +1006,9 @@ with tab2:
         st.markdown(
             f"""
             <div class="compat-result-box">
-                <div>نتيجة التوافق للرقم النهائي ({comp_res['final_number']})</div>
+                <div class="compat-num">الرقم النهائي: {comp_res['final_number']}</div>
                 <div class="compat-meaning">{html.escape(comp_res['result_meaning'])}</div>
+                <div class="compat-details">{comp_res['detailed_meaning']}</div>
             </div>
             """,
             unsafe_allow_html=True,
